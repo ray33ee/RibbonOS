@@ -18,8 +18,13 @@ extern "C"
 
 	    mmio_write(UART0_ICR, 0x7FF);
 
-	    mmio_write(UART0_IBRD, 325);
-	    mmio_write(UART0_FBRD, 33);
+#ifndef MODEL_1 //900Mhz clock speed, 115200 baud
+	    mmio_write(UART0_IBRD, 488);
+	    mmio_write(UART0_FBRD, 18);
+#else //700Mhz clock speed, 115200 baud
+	    mmio_write(UART0_IBRD, 379);
+	    mmio_write(UART0_FBRD, 50);
+#endif
 
 	    mmio_write(UART0_LCRH, (1 << 4) | (1 << 5) | (1 << 6));
 

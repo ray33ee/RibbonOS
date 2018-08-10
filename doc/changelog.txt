@@ -1,0 +1,9 @@
+Version 1.0.0
+	INITIAL COMMIT
+
+Version 1.0.1
+	- Makefile no longer fails if folders 'obj' or 'bin' do not exist
+	- Makefile now echos when each translatioon unit is compiled, and displays unit path
+	- Makefile moved from /OS/build to OS. Makefile paths adjusted accordingly
+	- Arguments to QEMU added to separate variable in Makefile
+	- New source and header added, with skeleton functions and reference to extern __end

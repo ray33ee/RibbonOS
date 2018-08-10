@@ -1,6 +1,7 @@
 # ARM g++ compiler
-CC=arm-none-eabi-g++
+GCC=arm-none-eabi-g++
 
+# Add Pi specific options
 ifeq ($(RASPI_MODEL), 1)
 	CPU = arm1176jzf-s
 	DIRECTIVES = -D MODEL_1
@@ -13,18 +14,21 @@ else
 endif
 
 ELF_NAME = RibbonOS.elf
+VM_SIZE = 256
 
-# Flags for compiling and linking
+# Flags for compiling, linking and emulator
 CFLAGS = -mcpu=$(CPU) -fpic -ffreestanding -fno-exceptions -std=c++14 $(DIRECTIVES)
 SRCFLAGS = -O2 -Wall -Wextra
-LINK_FLAGS = -ffreestanding -O2 -nostdlib -fno-exceptions
+LINK_FLAGS = -ffreestanding -O2 -nostdlib -fno-exceptions -lgcc
+QEMU_FLAGS = -m $(VM_SIZE) -M $(QEMU_PI) -serial stdio -kernel
 
 # Folder locations
-KERNEL_SOURCE_DIR = ../src/kernel
-KERNEL_HEADER_DIR = ../include
-COMMON_SOURCE_DIR = ../src/common
-OBJ_DIR = ../obj
-BIN_DIR = ../bin
+KERNEL_SOURCE_DIR = src/kernel
+KERNEL_HEADER_DIR = include
+COMMON_SOURCE_DIR = src/common
+OBJ_DIR = obj
+BIN_DIR = bin
+BUILD_DIR = build
 
 #File lists
 KERNEL_FILES = $(wildcard $(KERNEL_SOURCE_DIR)/*.cpp)
@@ -41,21 +45,31 @@ build: $(OBJECTS) $(HEADERS)
 	@echo ========================================
 	@echo                  LINKING
 	@echo ========================================
-	$(CC) -T linker.ld -o $(BIN_DIR)/$(ELF_NAME) $(LINK_FLAGS) $(OBJECTS)
+	mkdir -p $(BIN_DIR)
+	$(GCC) -T $(BUILD_DIR)/linker.ld -o $(BIN_DIR)/$(ELF_NAME) $(LINK_FLAGS) $(OBJECTS)
 	arm-none-eabi-objcopy $(BIN_DIR)/$(ELF_NAME) -O binary $(BIN_DIR)/$(IMG_NAME)
 
 
 $(OBJ_DIR)/%.o: $(KERNEL_SOURCE_DIR)/%.cpp
 	@echo ========================================
-	@echo                  COMPILING 
+	@echo                  COMPILING $<
 	@echo ========================================
-	$(CC) $(CFLAGS) -I$(KERNEL_SOURCE_DIR) -I$(KERNEL_HEADER_DIR) -c $< -o $@ $(CSRCFLAGS)
+	mkdir -p $(OBJ_DIR)
+	$(GCC) $(CFLAGS) -I$(KERNEL_SOURCE_DIR) -I$(KERNEL_HEADER_DIR) -c $< -o $@ $(CSRCFLAGS)
 
 $(OBJ_DIR)/%.o: $(KERNEL_SOURCE_DIR)/%.s
-	$(CC) $(CFLAGS) -I$(KERNEL_SOURCE_DIR) -c $< -o $@
+	@echo ========================================
+	@echo                  COMPILING $<
+	@echo ========================================
+	mkdir -p $(OBJ_DIR)
+	$(GCC) $(CFLAGS) -I$(KERNEL_SOURCE_DIR) -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(COMMON_SOURCE_DIR)/%.cpp
-	$(CC) $(CFLAGS) -I$(KERNEL_SOURCE_DIR) -I$(KERNEL_HEADER_DIR) -c $< -o $@ $(CSRCFLAGS)
+	@echo ========================================
+	@echo                  COMPILING $<
+	@echo ========================================
+	mkdir -p $(OBJ_DIR)
+	$(GCC) $(CFLAGS) -I$(KERNEL_SOURCE_DIR) -I$(KERNEL_HEADER_DIR) -c $< -o $@ $(CSRCFLAGS)
 
 clean: 
 	@echo ========================================
@@ -74,4 +88,4 @@ run:
 	@echo ========================================
 	@echo                  RUN
 	@echo ========================================
-	qemu-system-arm -m 256 -M $(QEMU_PI) -serial stdio -kernel $(BIN_DIR)/$(ELF_NAME)
+	qemu-system-arm $(QEMU_FLAGS) $(BIN_DIR)/$(ELF_NAME)

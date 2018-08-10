@@ -9,9 +9,9 @@ private:
     unsigned char ch;
 
 public:
-    Number(unsigned char c = 0): ch(c) {}
+    Number(unsigned char c = 0): ch(c) { uart_putc(ch); }
 
-    void send() const { uart_putc(ch); }
+    //void send() const { uart_putc(ch); }
 
 };
 
@@ -26,7 +26,9 @@ extern "C" void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 
     Number f('#');
 
-    f.send();
+    //f.send();
+
+    Number* t = new Number('F');
 
     while (1) {
         uart_putc(uart_getc());

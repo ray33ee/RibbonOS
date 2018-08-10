@@ -1,20 +1,32 @@
 #ifndef COMMON_UART
 #define COMMON_UART
 
-#include <stddef.h>
+#include <cstddef>
+#include <cstdint>
 #include <common/mmio.h>
+#include <cfloat>
+
+float getDivider();
+
+int32_t getIBRD();
+
+int32_t getFBRD();
 
 extern "C" {
 	enum
 	{
 	    // The GPIO registers base address.
-	    GPIO_BASE = 0x3F200000, // for raspi2 & 3, 0x20200000 for raspi1
+#ifdef MODEL_1
+	    GPIO_BASE = 0x20200000,
+#else
+	    GPIO_BASE = 0x3F200000,
+#endif		
 
 	    GPPUD = (GPIO_BASE + 0x94),
 	    GPPUDCLK0 = (GPIO_BASE + 0x98),
 
 	    // The base address for UART.
-	    UART0_BASE = 0x3F201000, // for raspi2 & 3, 0x20201000 for raspi1
+	    UART0_BASE = (GPIO_BASE + 0x1000),
 
 	    UART0_DR     = (UART0_BASE + 0x00),
 	    UART0_RSRECR = (UART0_BASE + 0x04),
@@ -35,6 +47,8 @@ extern "C" {
 	    UART0_ITOP   = (UART0_BASE + 0x88),
 	    UART0_TDR    = (UART0_BASE + 0x8C),
 	};
+
+
 
 	void uart_init();
 
