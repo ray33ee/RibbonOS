@@ -48,7 +48,7 @@ extern "C" {
 	    UART0_TDR    = (UART0_BASE + 0x8C),
 	};
 
-
+	unsigned char numToHex(uint8_t num);
 
 	void uart_init();
 
@@ -57,6 +57,8 @@ extern "C" {
 	unsigned char uart_getc();
 
 	void uart_puts(const char* str);
+
+	void uart_puti(uint32_t value);
 }
 
 #endif

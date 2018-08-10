@@ -1,7 +1,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <kernel/kernel.h>
+#include <kernel/meminit.h>
 #include <common/uart.h>
+#include <common/new.h>
 
 class Number
 {
@@ -21,14 +23,12 @@ extern "C" void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
     (void) r1;
     (void) atags;
 
+    HeapMetadata heap;
+
     uart_init();
     uart_puts("Hello, kernel World!\r\n");
 
-    Number f('#');
-
-    //f.send();
-
-    Number* t = new Number('F');
+    uart_puti(sizeof(PageData));
 
     while (1) {
         uart_putc(uart_getc());

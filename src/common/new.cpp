@@ -1,25 +1,28 @@
 #include <common/new.h>
 
-extern "C" uint8_t __end;
 
-void* kmalloc(size_t size)
-{
-	return (void*)&__end;
-}
-
-void kfree(void* ptr, size_t size)
+extern "C"
 {
 
-}
+	void* kmalloc(size_t size)
+	{
+		return 0;
+	}
 
-void* krealloc(size_t size)
-{
-	return 0;
-}
+	void kfree(void* ptr, size_t size)
+	{
 
-void* kcalloc(size_t size)
-{
-	return 0;
+	}
+
+	void* krealloc(size_t size)
+	{
+		return 0;
+	}
+
+	void* kcalloc(size_t size)
+	{
+		return 0;
+	}
 }
 
 void* operator new (size_t size)

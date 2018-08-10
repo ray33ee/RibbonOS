@@ -7,3 +7,7 @@ Version 1.0.1
 	- Makefile moved from /OS/build to OS. Makefile paths adjusted accordingly
 	- Arguments to QEMU added to separate variable in Makefile
 	- New source and header added, with skeleton functions and reference to extern __end
+
+Version 1.0.2
+	- Kernel specific low level functions taken from 'new' and added to specific 'meminit'
+	- Added classes PageDate and HeapMetadata skeletons to manage heap

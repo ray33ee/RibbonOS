@@ -19,8 +19,8 @@ extern "C"
 	    mmio_write(UART0_ICR, 0x7FF);
 
 #ifndef MODEL_1 //900Mhz clock speed, 115200 baud
-	    mmio_write(UART0_IBRD, 488);
-	    mmio_write(UART0_FBRD, 18);
+	    mmio_write(UART0_IBRD, 325);
+	    mmio_write(UART0_FBRD, 33);
 #else //700Mhz clock speed, 115200 baud
 	    mmio_write(UART0_IBRD, 379);
 	    mmio_write(UART0_FBRD, 50);
@@ -50,5 +50,20 @@ extern "C"
 	{
 	    for (size_t i = 0; str[i] != '\0'; i ++)
 	        uart_putc((unsigned char)str[i]);
+	}
+
+	/* Sends a hex string representing the number 'value' to the terminal */
+	void uart_puti(uint32_t value)
+	{
+		auto numToHex = [](uint32_t num)-> char { return num < 10 ? '0' + num : 'A' + num - 10; };
+		uint8_t* byte = (uint8_t*)&value + 3;
+		uart_putc('0');
+		uart_putc('x');
+		for (uint8_t i = 0; i < 4; ++i)
+		{
+			uart_putc(numToHex((*byte & 0xF0) >> 4));
+			uart_putc(numToHex(*byte & 0x0F));
+			--byte;
+		}
 	}
 }
