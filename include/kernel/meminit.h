@@ -2,17 +2,18 @@
 #define KERNEL_MEMINIT
 
 #include <cstdint>
+#include <cstddef>
 
-//Debugging ONLY
+#ifdef DEBUG
 #include <common/uart.h>
+#endif
 
-class HeapMetadata;
+static const uint32_t KERNEL_RESERVED = 1024 * 1024 * 2;
+static const uint32_t PAGE_SIZE = 4096;
+static const uint32_t LEN = 10;
 
-class PageData
+struct PageData
 {
-	/* Allow access to PageData through HeapMetadata */
-	friend HeapMetadata;
-private:
 	/* Page metadata */
 	uint8_t _allocated : 1;	
 	uint8_t _kernel : 1;		
@@ -20,33 +21,25 @@ private:
 
 	/* Addressed to next blocks in list */
 	uint32_t _next;				
-	uint32_t _previous;			
-public: 
-	/* Setup linked-list pointers and metadata */
-	PageData();
-
-	bool isAllocated() const;
-	bool isKernel() const;
-
-	uint32_t next() const;
-	uint32_t previous() const;
+	uint32_t _previous;	
 };
 
-class HeapMetadata
+
+
+extern "C"
 {
-private:
-	static const uint32_t LEN = 20;
-	static const uint32_t PAGE_SIZE = 4096;
-	PageData _meta[LEN+1];						//Add one for past the end pointer
-	uint32_t _base; //Address of bottom of heap
+	extern PageData* _meta; //Pointer to beginning of metadata list
+	extern uint32_t _base; //Pointer to beginning of heap
 
-public:
-	HeapMetadata();
+	void heapInit();
 
-	void show() const;
+#ifdef DEBUG
+	void heapShow();
+#endif
 
 	void* malloc(size_t);
-	void free(void*, size_t);
-};
+	void free(void*);
+
+}
 
 #endif

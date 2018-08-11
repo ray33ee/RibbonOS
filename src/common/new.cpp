@@ -1,46 +1,21 @@
 #include <common/new.h>
 
-
-extern "C"
-{
-
-	void* kmalloc(size_t size)
-	{
-		return 0;
-	}
-
-	void kfree(void* ptr, size_t size)
-	{
-
-	}
-
-	void* krealloc(size_t size)
-	{
-		return 0;
-	}
-
-	void* kcalloc(size_t size)
-	{
-		return 0;
-	}
-}
-
 void* operator new (size_t size)
 {
-	return kmalloc(size);
+	return malloc(size);
 }
 
 void* operator new[] (size_t size)
 {
-	return kmalloc(size);
+	return malloc(size);
 }
 
-void operator delete (void* ptr, size_t size)
+void operator delete (void* ptr, unsigned int i)
 {
-	kfree(ptr, size);
+	free(ptr);
 }
 
-void operator delete[] (void* ptr, size_t size)
+void operator delete[] (void* ptr)
 {
-	kfree(ptr, size);
+	free(ptr);
 }

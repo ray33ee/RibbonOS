@@ -16,8 +16,11 @@ endif
 ELF_NAME = RibbonOS.elf
 VM_SIZE = 256
 
+# Defines the DEBUG preprosessor directive
+DEBUG = -D DEBUG
+
 # Flags for compiling, linking and emulator
-CFLAGS = -mcpu=$(CPU) -fpic -ffreestanding -fno-exceptions -std=c++14 $(DIRECTIVES)
+CFLAGS = -mcpu=$(CPU) -fpic -ffreestanding -fno-exceptions -std=c++14 $(DIRECTIVES) $(DEBUG)
 SRCFLAGS = -O2 -Wall -Wextra
 LINK_FLAGS = -ffreestanding -O2 -nostdlib -fno-exceptions -lgcc
 QEMU_FLAGS = -m $(VM_SIZE) -M $(QEMU_PI) -serial stdio -kernel

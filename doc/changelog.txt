@@ -14,3 +14,9 @@ Version 1.0.2
 
 Version 1.0.3
 	- Basic malloc/free implementation complete
+
+Version 1.0.4
+	- HeapMetadata converted from class to series of functions, and PageData implemented as struct. 
+	- Malloc and free now tied to new and delete
+	- Free function modified to only take a single pointer (size of block is calculated automatically)
+	
