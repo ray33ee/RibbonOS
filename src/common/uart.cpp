@@ -66,4 +66,11 @@ extern "C"
 			--byte;
 		}
 	}
+
+	void uart_putn()
+	{
+		uart_putc('\r');
+		uart_putc('\n');
+
+	}
 }

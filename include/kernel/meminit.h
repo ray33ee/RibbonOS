@@ -10,14 +10,19 @@ class HeapMetadata;
 
 class PageData
 {
+	/* Allow access to PageData through HeapMetadata */
 	friend HeapMetadata;
 private:
-	uint8_t _allocated : 1;	//Set if block is allocated
-	uint8_t _kernel : 1;		//Set if owned by kernel
+	/* Page metadata */
+	uint8_t _allocated : 1;	
+	uint8_t _kernel : 1;		
 	uint32_t _reserved : 30;	
-	uint32_t _next;				//Next block in list
-	uint32_t _previous;			//Previous block in list
-public:
+
+	/* Addressed to next blocks in list */
+	uint32_t _next;				
+	uint32_t _previous;			
+public: 
+	/* Setup linked-list pointers and metadata */
 	PageData();
 
 	bool isAllocated() const;
@@ -30,19 +35,18 @@ public:
 class HeapMetadata
 {
 private:
-	static const uint32_t LEN = 15;
-	PageData _meta[LEN];
+	static const uint32_t LEN = 20;
+	static const uint32_t PAGE_SIZE = 4096;
+	PageData _meta[LEN+1];						//Add one for past the end pointer
+	uint32_t _base; //Address of bottom of heap
+
 public:
 	HeapMetadata();
+
+	void show() const;
+
+	void* malloc(size_t);
+	void free(void*, size_t);
 };
-
-extern "C" 
-{
-	uint32_t getMemSize();
-
-	uint32_t getHeapSize();
-
-	void initialise_memory();
-}
 
 #endif

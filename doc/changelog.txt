@@ -11,3 +11,6 @@ Version 1.0.1
 Version 1.0.2
 	- Kernel specific low level functions taken from 'new' and added to specific 'meminit'
 	- Added classes PageDate and HeapMetadata skeletons to manage heap
+
+Version 1.0.3
+	- Basic malloc/free implementation complete
