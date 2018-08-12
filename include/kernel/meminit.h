@@ -31,7 +31,13 @@ extern "C"
 	extern PageData* _meta; //Pointer to beginning of metadata list
 	extern uint32_t _base; //Pointer to beginning of heap
 
+	void memclr(void*, size_t);
+	void memcpy(void*, void*, size_t);
+
 	void heapInit();
+
+	uint32_t getIndex(void* ptr);
+	uint32_t getPagesRequired(size_t);
 
 #ifdef DEBUG
 	void heapShow();
@@ -39,6 +45,9 @@ extern "C"
 
 	void* malloc(size_t);
 	void free(void*);
+	
+	void* calloc(size_t);
+	void* realloc(void*, size_t);
 
 }
 

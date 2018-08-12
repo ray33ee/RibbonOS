@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <kernel/meminit.h>
 
+#include <common/uart.h>
+
 void* operator new (size_t size);
 
 void* operator new[] (size_t size);

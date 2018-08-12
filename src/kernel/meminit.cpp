@@ -7,6 +7,18 @@ uint32_t _base;
 
 extern "C" 
 {
+	void memclr(void* start, size_t len)
+	{
+		char* arr = (char*)start;
+		for (size_t i = 0; i < len; ++i)
+			arr[i] = 0;
+	}
+
+	void memcpy(void* source, void* estination, size_t len)
+	{
+
+	}
+
 	void heapInit()
 	{
 		//Set _metadata array to area of meemory directly after program, at __end
@@ -23,8 +35,8 @@ extern "C"
 			_meta[i]._next = (uint32_t(_meta + i + 1));
 
 			//Clear metadata
-			_meta[i]._allocated = (0);
-			_meta[i]._kernel = (0);
+			_meta[i]._allocated = false;
+			_meta[i]._kernel = false;
 
 			_meta[i]._reserved = 0;
 		}
@@ -32,6 +44,19 @@ extern "C"
 		//Set head and tail pointers to null
 		_meta[0]._previous = 0;
 		_meta[LEN]._next = 0;
+
+		_meta[0]._allocated = true;
+	}
+
+	uint32_t getIndex(void* ptr)
+	{
+		return ((uint32_t)ptr - _base) / PAGE_SIZE;
+	}
+
+	//Calculates the number of pages required to fit 'size' bytes of data
+	uint32_t getPagesRequired(size_t size)
+	{
+		return size / PAGE_SIZE + bool(size % PAGE_SIZE);
 	}
 
 #ifdef DEBUG
@@ -40,7 +65,7 @@ extern "C"
 		for (const PageData* start = _meta; start->_next != 0; start = (PageData*)start->_next)
 		{
 			uart_puti((uint32_t)start);
-			uart_puts(start->_allocated == 0 ? " FREE" : " ALLOC");
+			uart_puts(start->_allocated == false ? " FREE" : " ALLOC");
 			uart_putn();
 		}
 		uart_putn();
@@ -53,7 +78,7 @@ extern "C"
 			return nullptr;
 
 		//Calculate number of pages required 
-		size_t pages = size / PAGE_SIZE + bool(size % PAGE_SIZE); //Equivalent of ceil(size / PAGE_SIZE)
+		uint32_t pages = getPagesRequired(size); //Equivalent of ceil(size / PAGE_SIZE)
 
 		//Locate available page (making sure the required number of pages after are unallocated)
 		PageData* candidate = &_meta[LEN];
@@ -92,7 +117,7 @@ extern "C"
 		}
 
 		//Identify block as allocated
-		candidate->_allocated = (1);
+		candidate->_allocated = true;
 
 		//Link up outer nodex
 		first->_next = ((uint32_t)last);
@@ -105,12 +130,12 @@ extern "C"
 	void free(void* ptr)
 	{
 		//0. Make sure ptr is valid
-		//NOTE: As per C/C++ standards, no bounds checking is performed
+		//NOTE: As per C/C++ standards, no bounds checking is performed, just a nullptr check
 		if (ptr == nullptr)
 			return;
 
 		//1. Get position of PageData node from ptr
-		auto index = ((uint32_t)ptr - _base) / PAGE_SIZE; //Get nth page index
+		auto index = getIndex(ptr); //Get nth page index
 
 		//2. Get first and last metadata enteries
 		auto first = _meta + index;
@@ -121,6 +146,86 @@ extern "C"
 		last->_previous = (uint32_t(first-1));
 
 		//4. Set metadata
-		first->_allocated = (0);
+		first->_allocated = false;
 	}
+
+	void* calloc(size_t size)
+	{
+		void* ptr = malloc(size);
+
+		memclr(ptr, size);
+
+		return ptr;
+	}
+
+	void* realloc(void* ptr, size_t newsize)
+	{
+		if (ptr == nullptr)
+			return malloc(newsize);
+
+		if (!newsize)
+		{
+			free(ptr);
+			return nullptr;
+		}
+
+		//1. Calculate the number of pages required by the new size
+		auto pagesRequired = getPagesRequired(newsize);
+
+		//2. Calculate the index of the pointer
+		auto index = getIndex(ptr);
+
+		//3. Calculate the number of pages currently taken by ptr
+		PageData* start = _meta + index;
+		PageData* end = (PageData*)start->_next;
+
+		auto currentPages = (end - start);
+
+		//4. If we don't have enough pages:
+		if (pagesRequired > currentPages)
+		{
+			//a) Probe subsequent blocks for space to expand
+			bool isFree = true;
+			auto extra = pagesRequired - currentPages;
+			for (int i = 0; i < extra; ++i)
+				isFree &= !end[i]._allocated;
+			
+			//b) If there is room to expand, update nodes accordingly, return original ptr
+			if (isFree)
+			{
+				PageData* newEnd = start + pagesRequired; //New 'next' pointer after extension.
+
+				start->_next = (uint32_t)newEnd;
+				newEnd->_previous = (uint32_t)start;
+			}
+			//c) If there is no room to expand:
+			else
+			{
+				//i) Allocate new block
+				uint32_t* newptr = (uint32_t*)malloc(newsize);
+
+				//ii) Copy data from old block to new
+				uint32_t* recast = (uint32_t*)ptr; //Cast to uint32 to copy data
+				for (int i = 0; i < currentPages*PAGE_SIZE / sizeof(uint32_t); ++i)
+					newptr[i] = recast[i];
+
+				//iii) Free old block
+				free(ptr);
+
+				//iv) Return new pointer
+				return newptr;
+			}
+		}
+		//6. If we have too many pages
+		else if (pagesRequired < currentPages)
+		{
+			//a) Shortened block by updating nodes. return ptr
+			end->_previous = (uint32_t)(end-1);
+			start->_next = (uint32_t)(start + pagesRequired);
+		}
+
+		return ptr;
+	}
+
+	
 }

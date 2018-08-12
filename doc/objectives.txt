@@ -1,0 +1,10 @@
+RibbonOS is a hobby project, and by no means an attempt at a full scale OS. That being said there are vertain objectives that I would like to acomplish:
+
+ - Process handling 		- Multple processes working concurrently, handled by the OS.
+ - Memory Managment 		- Memory allocation and freeing, with processes given virtual memory space.
+ - Non-volatile storage 	- Data and programs stored on a non-volatile storage medium (first Serial EEPROM then eMMC SD card)
+ - File transfer 			- A way to transfer large blocks of data to and from the OS (first with UART, via console on computer, then accross network)
+ - Screen 					- HDMI screen used to display information
+ - Console process 			- Console used to start processes, access files, and other tasks, implemented as a process itself.
+ - Keyboard 				- USB keyboard used to comunicate to system
+ - Compatibility 			- OS should work on as many RaspberryPi types as possible

@@ -1,8 +1,7 @@
-#include <stddef.h>
-#include <stdint.h>
 #include <kernel/kernel.h>
-#include <common/uart.h>
-#include <common/new.h>
+
+extern "C" uint32_t addw(uint32_t a, uint32_t b);
+extern "C" uint32_t subw(uint32_t a, uint32_t b);
 
 extern "C" void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 {
@@ -12,40 +11,25 @@ extern "C" void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
     heapInit();
     uart_init();
 
-
-
     uart_puts("Hello, kernel World!\r\n");
 
     heapShow();
 
+    int* arr = (int*)malloc(sizeof(int) * 1024 * 3);
+
+    uart_puts("POINTER: ");
+    uart_puti((uint32_t)arr);
     uart_putn();
 
-    char* ptr1 = new char[1000];
-    char* ptr2 = new char[4097];
-    char* ptr3 = new char[1000];
-    char* ptr4 = new char[1000];
+    heapShow();
+
+    arr = (int*)realloc(arr, 4096 * 1);
+
+    uart_puts("POINTER: ");
+    uart_puti((uint32_t)arr);
+    uart_putn();
 
     heapShow();
 
-    delete[] ptr3;
-
-    heapShow();
-
-    char* ptr5 = new char[4097];
-
-    heapShow();
-
-    char* ptr6 = new char[1000];
-
-    heapShow();
-
-    int* n = new int;
-
-    delete n;
-
-
-    while (1) {
-        uart_putc(uart_getc());
-        uart_putn();
-    }
+    while (1) uart_putc(uart_getc());
 }
