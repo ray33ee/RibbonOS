@@ -6,6 +6,7 @@
 #include <common/uart.h>
 #include <common/mmio.h>
 #include <common/new.h>
+#include <common/smart.h>
 
 extern "C" void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags);
 

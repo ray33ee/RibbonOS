@@ -44,8 +44,6 @@ extern "C"
 		//Set head and tail pointers to null
 		_meta[0]._previous = 0;
 		_meta[LEN]._next = 0;
-
-		_meta[0]._allocated = true;
 	}
 
 	uint32_t getIndex(void* ptr)
@@ -65,7 +63,7 @@ extern "C"
 		for (const PageData* start = _meta; start->_next != 0; start = (PageData*)start->_next)
 		{
 			uart_puti((uint32_t)start);
-			uart_puts(start->_allocated == false ? " FREE" : " ALLOC");
+			uart_puts(start->_allocated ? " ALLOC" : " FREE");
 			uart_putn();
 		}
 		uart_putn();
@@ -181,12 +179,35 @@ extern "C"
 
 		auto currentPages = (end - start);
 
+		//Private function used to allocate new block
+		auto lambdaMalloc = [=]()-> void*
+		{
+			//i) Allocate new block
+			uint32_t* newptr = (uint32_t*)malloc(newsize);
+
+			//ii) Copy data from old block to new
+			uint32_t* recast = (uint32_t*)ptr; //Cast to uint32 to copy data
+			for (int i = 0; i < currentPages*PAGE_SIZE / sizeof(uint32_t); ++i)
+				newptr[i] = recast[i];
+
+			//iii) Free old block
+			free(ptr);
+
+			//iv) Return new pointer
+			return newptr;
+		};
+
 		//4. If we don't have enough pages:
 		if (pagesRequired > currentPages)
 		{
 			//a) Probe subsequent blocks for space to expand
 			bool isFree = true;
 			auto extra = pagesRequired - currentPages;
+
+			//No room for extension. Must reallocate
+			if (index + extra > LEN) 
+				return lambdaMalloc();
+
 			for (int i = 0; i < extra; ++i)
 				isFree &= !end[i]._allocated;
 			
@@ -201,19 +222,7 @@ extern "C"
 			//c) If there is no room to expand:
 			else
 			{
-				//i) Allocate new block
-				uint32_t* newptr = (uint32_t*)malloc(newsize);
-
-				//ii) Copy data from old block to new
-				uint32_t* recast = (uint32_t*)ptr; //Cast to uint32 to copy data
-				for (int i = 0; i < currentPages*PAGE_SIZE / sizeof(uint32_t); ++i)
-					newptr[i] = recast[i];
-
-				//iii) Free old block
-				free(ptr);
-
-				//iv) Return new pointer
-				return newptr;
+				return lambdaMalloc();
 			}
 		}
 		//6. If we have too many pages
@@ -223,7 +232,6 @@ extern "C"
 			end->_previous = (uint32_t)(end-1);
 			start->_next = (uint32_t)(start + pagesRequired);
 		}
-
 		return ptr;
 	}
 

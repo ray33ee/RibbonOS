@@ -1,3 +1,3 @@
- - Modify code to use MODEL_1 define. Use this to select correct ACT LED, UART pins, GPIO and UARD addresses etc.
  - Use constexpr to calculate baud rate at compile time (using const int clock_speed, defined for both raspberry pi models)
  - Modify Makefile to compile kernels for both types of raspberry pi (making kernel and kernel7) by passing MODEL_1 and recompiling each time
+ - Modify allocation algorithm from first-fit to buddy's system

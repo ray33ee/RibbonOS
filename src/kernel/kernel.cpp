@@ -13,23 +13,10 @@ extern "C" void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 
     uart_puts("Hello, kernel World!\r\n");
 
-    heapShow();
+    SharedSmart<int> first(12);
+    SharedSmart<int> second(99);
 
-    int* arr = (int*)malloc(sizeof(int) * 1024 * 3);
-
-    uart_puts("POINTER: ");
-    uart_puti((uint32_t)arr);
-    uart_putn();
-
-    heapShow();
-
-    arr = (int*)realloc(arr, 4096 * 1);
-
-    uart_puts("POINTER: ");
-    uart_puti((uint32_t)arr);
-    uart_putn();
-
-    heapShow();
+    second = first;
 
     while (1) uart_putc(uart_getc());
 }

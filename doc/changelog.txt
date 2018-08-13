@@ -19,4 +19,12 @@ Version 1.0.4
 	- HeapMetadata converted from class to series of functions, and PageData implemented as struct. 
 	- Malloc and free now tied to new and delete
 	- Free function modified to only take a single pointer (size of block is calculated automatically)
-	
+
+Version 1.0.5
+	- Realloc and Calloc implementation complete.
+	- Memclr function added
+	- Test assembly coded added
+
+Version 1.0.6
+	- Realloc function now allocates new block if extension is past the end of the heap
+	- Shared pointer implemented
