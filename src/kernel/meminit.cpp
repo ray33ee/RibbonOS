@@ -58,7 +58,7 @@ extern "C"
 	}
 
 #ifdef DEBUG
-	void heapShow()
+	void heapShow() //Welcome to the...HEAP SHOW!! [Coming alive]
 	{
 		for (const PageData* start = _meta; start->_next != 0; start = (PageData*)start->_next)
 		{

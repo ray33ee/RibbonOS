@@ -13,8 +13,6 @@ int32_t getIBRD();
 int32_t getFBRD();
 
 extern "C" {
-	
-
 	void uart_init();
 
 	void uart_putc(unsigned char c);

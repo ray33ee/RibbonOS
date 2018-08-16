@@ -2,6 +2,7 @@
 #define COMMON_SMART
 
 #include <common/uart.h>
+#include <cstddef> //For nullptr_t
 
 template <typename T>
 struct RefObj
@@ -21,7 +22,10 @@ private:
 	void decref() const
 	{
 		if (_pointee->_refcount == 1) 	//If this is the last object referencing _pointee, delete
+		{
 			delete _pointee;
+			_pointee = nullptr;
+		}
 		else							//Otherwise just decrement ref count
 			--(_pointee->_refcount);
 	}
@@ -40,54 +44,52 @@ private:
 	}
 
 public:
-	SharedSmart() 
+
+	/* Constructors */
+	SharedSmart()
 	{
 		_pointee = new RefObj<T>;
 		_pointee->_refcount = 1;
 	}
 
-	SharedSmart(T val) : SharedSmart()
-	{
-		_pointee->_object = val;
-	}
+	SharedSmart(T val) : SharedSmart() { _pointee->_object = val; }
 
+	SharedSmart(SharedSmart<T>& smart) { replace(smart); }
+
+	/* Prevent potentially dangerous raw pointer usage */
 	SharedSmart(T* ptr) = delete;
 
-	SharedSmart(SharedSmart<T>& smart)
-	{
-		replace(smart);
-	}
+	/* Get accessor methods */
+	T* get() const { return &(_pointee->_object); }
 
-	~SharedSmart()
-	{
-		decref();
-	}
+	/* Destructor */
+	~SharedSmart() { decref(); }
 
-	SharedSmart<T>& operator= (SharedSmart<T>& smart)
-	{
-		replace(smart);
-	}
+	/* Assignment */
+	SharedSmart<T>& operator= (SharedSmart<T>& smart) { replace(smart); }
 
-	T& operator* () const
-	{
-		return _pointee->_object;
-	}
+	/* Dereference pointer */
+	T& operator* () const { return _pointee->_object; }
 
-	T* operator-> () const
-	{
-		return &(_pointee->_object);
-	}
+	/* Member access */
+	T* operator-> () const { return &(_pointee->_object); }
+
+	/* Comparison */
+	bool operator==(const SharedSmart &smart) { return _pointee == smart._pointee; }
+
+	bool operator==(nullptr_t null) { return _pointee == null; }
+
+	bool operator!=(const SharedSmart &smart) { return _pointee != smart._pointee; }
+
+	bool operator!=(nullptr_t null) { return _pointee != null; }
+
+	/* Conversion */
+	operator bool() const { return _pointee == nullptr; }
 
 #ifdef DEBUG
-	int getRefCount() const
-	{
-		return _pointee->_refcount;
-	}
+	int getRefCount() const { return _pointee->_refcount; }
 
-	RefObj<T>* getPointer() const
-	{
-		return _pointee;
-	}
+	RefObj<T>* getPointer() const { return _pointee; }
 #endif
 
 };
