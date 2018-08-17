@@ -6,24 +6,30 @@
 #include <common/mmio.h>
 #include <cfloat>
 
+class String;
+
 float getDivider();
 
 int32_t getIBRD();
 
 int32_t getFBRD();
 
-extern "C" {
-	void uart_init();
+void uart_init();
 
-	void uart_putc(unsigned char c);
+unsigned char uart_getc();
 
-	unsigned char uart_getc();
+void uart_put(unsigned char c);
 
-	void uart_puts(const char* str);
+void uart_put(uint32_t value);
 
-	void uart_puti(uint32_t value);
+void uart_put(int value);
 
-	void uart_putn();
-}
+void uart_put();
+
+void uart_put(char* str);
+
+void uart_put(const char* str);
+
+void uart_put(String str);
 
 #endif

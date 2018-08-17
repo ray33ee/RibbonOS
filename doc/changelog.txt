@@ -32,3 +32,10 @@ Version 1.0.6
 Version 1.0.7
 	- Basic Vector and Linked list implemented
 	- Iterator and const_iterator added to vector and linked list implementation
+
+Version 1.0.8
+	- Top and bottom nodes changed to pointers to fix const issue
+	- Linked list and Vector containers finished, with functioning const and non-const iterators
+	- String class Added
+	- Uart_Put functions overloaded
+	- Extern "C" removed, only used for functions that are called via assembly code

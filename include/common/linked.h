@@ -1,44 +1,46 @@
 #ifndef COMMON_LINKED
 #define COMMON_LINKED
 
-template<typename T>
-class Linked;
-
-template<typename T>
-class Node
-{
-private:
-
-	friend class Linked<T>;
-
-	Node<T>* _next;
-	Node<T>* _prev;
-	T 	  _data;
-public:
-	Node<T>* next() const { return _next; }
-	Node<T>* prev() const { return _prev; }
-
-	const T& data() const { return _data; }
-};
-
 /* Doubly linked list */
 template <typename T>
 class Linked
 {
 private:
-	Node<T>* _top;
-	Node<T>* _bottom;
+	class Node
+	{
+	private:
+		friend class iterator;
+		friend class const_iterator;
+		friend class Linked;
+
+		Node* _next;
+		Node* _prev;
+		T 	  _data;
+	public:
+		Node() {}
+	};
+
+	Node* _top;
+	Node* _bottom;
+
+	Node* getNode(int ind) const
+	{
+		Node* node = _bottom;
+		for (; ind >= 0; --ind)
+			node = node->_next;
+		return node;
+	}
 public:
 
 	class iterator
 	{
 	protected:
-		Node<T>* _node;
+		Node* _node;
 	public:
 		/* Constructors */
 		iterator(): _node(nullptr) {}
 
-		iterator(Node<T>* node): _node(node) {}
+		iterator(Node* node): _node(node) {}
 
 		/* Copying */
 		iterator(const iterator &iter): _node(iter._node) {}
@@ -76,7 +78,7 @@ public:
 	public:
 		const_iterator() : iterator() {}
 
-		const_iterator(Node<T>* node) : iterator(node) {}
+		const_iterator(Node* node) { iterator::_node = node; }
 
 		const_iterator(const const_iterator &iter): iterator(iter._node) {}
 
@@ -86,10 +88,11 @@ public:
 		operator const void*() const { return (void*)iterator::_element; }
 	};
 
+	/* Constructor */
 	Linked()
 	{
-		_top = new Node<T>;
-		_bottom = new Node<T>;
+		_top = new Node;
+		_bottom = new Node;
 
 		_top->_next = nullptr;
 		_top->_prev = _bottom;
@@ -98,13 +101,14 @@ public:
 		_bottom->_prev = nullptr;
 	}
 
+	/* Container manipulation */
 	void append(const T &val)
 	{
 		//Create new node
-		Node<T>* newnode = new Node<T>;
+		Node* newnode = new Node;
 
 		//Get pointer to last item in list
-		Node<T>* last = _top->_prev;
+		Node* last = _top->_prev;
 
 		//Link up new node to last node and top node
 		newnode->_prev = last;
@@ -118,12 +122,43 @@ public:
 		newnode->_data = val;
 	}
 
-	void remove()
+	void remove(int index) const
 	{
+		auto node = getNode(index);
 
+		node->_prev->_next = node->_next;
+		node->_next->_prev = node->_prev;
+
+		delete node;
 	}
 
-	int count() const {  }
+	void insert(int index, const T &val) const
+	{
+		//Get required node
+		auto node = getNode(index);
+
+		//Create new node
+		Node* newnode = new Node;
+
+		//Setup links from outer nodes to newnode
+		node->_prev->_next = newnode;
+		node->_next->_prev = newnode;
+
+		//Setup links from newnode to outer nodes
+		newnode->_prev = node->_prev;
+		newnode->_next = node->_next;
+
+		delete node;
+	}
+
+	/* Get accessor methods */
+	int length() const
+	{
+		int count = 0;
+		for (const_iterator it = const_begin(); it != const_end(); ++it)
+			++count;
+		return count;
+	}
 
 	/* Iterators */
 	iterator begin() const { return iterator(_bottom->_next); }
@@ -132,7 +167,20 @@ public:
 	const_iterator const_begin() const { return const_iterator(_bottom->_next); }
 	const_iterator const_end() const { return const_iterator(_top); }
 
-	~Linked();
+	/* Destructor */
+	~Linked()
+	{
+		//Delete all center nodes
+		for (Node* it = _bottom->_next; it != _top;)
+		{
+			Node* current = it;
+			it = it->_next;
+			delete current;
+		}
+		//Delete top and bottom ghost nodes
+		delete _top;
+		delete _bottom;
+	}
 
 };
 

@@ -2,16 +2,16 @@
 #include <common/smart.h>
 #include <common/vector.h>
 #include <common/linked.h>
+#include <common/string.h>
 
 extern "C" uint32_t addw(uint32_t a, uint32_t b);
 extern "C" uint32_t subw(uint32_t a, uint32_t b);
 
-class BigBoi
+struct Test
 {
-public:
-    uint32_t arr[512];
-
-    BigBoi() {}
+  int number;
+  Test(int n = 0): number(n) {}
+  void show() const { uart_put(number); uart_put(); }
 };
 
 extern "C" void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
@@ -22,21 +22,13 @@ extern "C" void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
     heapInit();
     uart_init();
 
-    uart_puts("Hello, kernel World!\r\n");
+    uart_put("Hello, kernel World!\r\n");
 
-    Linked<int> list;
+    String str("hello world!");
 
-    list.append(23);
+		uart_put(str);
 
-    list.append(17);
+		uart_put('d');
 
-    list.append(33);
-
-    for (auto it = list.const_begin(); it != list.const_end(); ++it)
-    {
-        uart_puti((uint32_t)*it);
-        uart_putn();
-    }
-
-    while (1) uart_putc(uart_getc());
+    while (1) uart_put(uart_getc());
 }

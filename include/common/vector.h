@@ -6,7 +6,7 @@
 template<typename T>
 class Vector
 {
-private:
+protected:
 	T* 	_array;
 	int _count;
 	int _increase; //How many times the vector has had to increase size
@@ -75,7 +75,7 @@ public:
 	Vector(T* array, int count) { _array = array; _count = count; _increase = 0; }
 
 	/* Copy Constructor */
-	Vector(const Vector &array) {  }
+	Vector(const Vector &list) { _array = list._array; _count = list._count; _increase = list._increase; }
 
 	/* Destructor */
 	~Vector() { delete[] _array; }
@@ -93,19 +93,7 @@ public:
 	/* Array manipulation */
 	void append(const T &obj)
 	{
-		//1. Calculate current size in bytes
-		auto bytesize = _count * sizeof(T);
-		//2. Calculate current and future size in pages
-		auto currentPageSize = getPagesRequired(bytesize);
-		auto futurePageSize = getPagesRequired(bytesize + sizeof(T));
-		//3. If the current append will spill over the allocation,
-		if (currentPageSize < futurePageSize)
-		{
-			//a) Reallocate with 'current size in pages + 2^_increase' number of pages
-			_array = (T*)realloc(_array, bytesize + getPagesRequired(sizeof(T)) * PAGE_SIZE * (1 << _increase));
-			//b) Increment _increase
-			++_increase;
-		}
+		increase(1);
 		//4. Add the item on to the end of the list
 		_array[_count] = obj;
 		//5. Increment _count
@@ -117,15 +105,46 @@ public:
 		for (int i = index; i < _count; ++i)
 			_array[i] = _array[i+1];
 		--_count;
+		squeeze();
+	}
+
+	void insert(int index, const T &val)
+	{
+		if (index == _count)
+		{
+			append(val);
+		}
+		else
+		{
+			increase(1);
+			for (int i = _count; i >= index; ++i)
+				_array[i] = _array[i-1];
+			_array[index] = val;
+			++_count;
+		}
 	}
 
 	/* Memory Managment */
-	void reserve(size_t size)
-	{
-
-	}
+	void reserve(size_t size) { _array = realloc(_array, size * sizeof(T)); }
 
 	void squeeze();
+
+	void increase(size_t size) //Request an expansion of 'size' bytes
+	{
+		//1. Calculate current size in bytes
+		auto bytesize = _count * sizeof(T);
+		//2. Calculate current and future size in pages
+		auto currentPageSize = getPagesRequired(bytesize);
+		auto futurePageSize = getPagesRequired(bytesize + sizeof(T) * size);
+		//3. If the current append will spill over the allocation,
+		if (currentPageSize < futurePageSize)
+		{
+			//a) Reallocate with 'current size in pages + 2^_increase' number of pages
+			_array = (T*)realloc(_array, bytesize + getPagesRequired(sizeof(T) * size) * PAGE_SIZE * (1 << _increase));
+			//b) Increment _increase
+			++_increase;
+		}
+	}
 
 	/* Iterators */
 	iterator begin() const { return iterator(_array); }
@@ -135,10 +154,23 @@ public:
 	const_iterator const_end() const { return const_iterator(_array + _count); }
 
 	/* Assignment */
-	Vector& operator= (const Vector &array);
+	Vector& operator= (const Vector &list) { _array = list._array; _count = list._count; _increase = list._increase; }
 
 	/* Deep copy of *this */
-	const Vector& deep();
+	Vector deep()
+	{
+		Vector<T> copy;
+
+		copy._count = _count;
+		copy._increase = _increase;
+
+		copy.reserve(_count);
+
+		for (int i = 0; i < _count; ++i)
+			copy._array[i] = _array[i];
+
+		return copy;
+	}
 
 };
 
